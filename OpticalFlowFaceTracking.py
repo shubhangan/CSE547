@@ -4,7 +4,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
-face_cascade = cv2.CascadeClassifier('/usr/local/share/OpenCV/haarcascades/haarcascade_frontalface_default.xml')
+face_cascade = cv2.CascadeClassifier('haarcascade.xml')
 
 def FaceDetector(im):
     gray=cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
@@ -68,6 +68,8 @@ def OpticalFlowTracker(v):
 
     # set the initial tracking window
     track_window = (c, r, w, h)
+    face_detected = 0
+    face_not_detected = 0
 
     while(1):
         ret ,frame = v.read() # read another frame
@@ -91,10 +93,11 @@ def OpticalFlowTracker(v):
             cv2.circle(frame, (x, y), 3, 255, -1)
 
         # if you track a rect (e.g. face detector) take the mid point,
-	if c != 0 and r != 0 and w != 0 and h != 0:
+        if c != 0 and r != 0 and w != 0 and h != 0:
             # Face detected in the current frame
 
             # Draw the rectangle to show face is detected.
+            face_detected = face_detected + 1
             cv2.rectangle(frame, (c, r), (c + w, r + h), (0, 0, 255), 2)
             cv2.circle(frame, (np.int0(c + w / 2), np.int0(r + h / 2)), 3, (0, 0, 255), -1) 
 
@@ -103,6 +106,7 @@ def OpticalFlowTracker(v):
             # print("== Face not detected in the %d frame ==" % frameCounter)
             # print(good_new)
             # Calculate the mean of all the co-ordinates. This should be the centre point of the face. To be done.
+            face_not_detected = face_not_detected + 1
             OF_XY = np.mean(good_new, axis=0)
             pt = frameCounter, np.int0(OF_XY[0]), np.int0(OF_XY[1])
             cv2.circle(frame, (np.int0(OF_XY[0]), np.int0(OF_XY[1])), 3, (0, 255, 0), -1)
@@ -116,6 +120,10 @@ def OpticalFlowTracker(v):
 
         old_gray = frame_gray.copy()
         p0 = good_new.reshape(-1,1,2)
+		
+    print("No of frames in which face is detected = " , face_detected)
+    print("No of frames in which optical flow output is used = ", face_not_detected)
+    print("Total frames = ",frameCounter-1)
         
 
 
